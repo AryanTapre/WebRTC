@@ -92,16 +92,23 @@
         }
     
         async function setDataChannel () {
-            console.log("inside setDataChannel");
-            const dc = window.lc.createDataChannel("channel")
-            window.dc = dc;
-            dc.onopen = function () {
-                console.log("data channel opened");
-            }
-            dc.onmessage = function (message){
-                console.log("message received: "+message);
-            }
-        }
+
+            window.lc.addEventListener("datachannel",(event) => {
+                console.log("dc");
+                window.dc = event.channel;
+
+                window.dc.onopen = function () {
+                    console.log("data channel opened");
+                }
+                window.dc.onmessage = function (message){
+                    console.log("message received: "+ message.data);
+                    
+                }
+            })
+                
+                
+        }            
+        
     
         async function initializeRTCConnection () {
             const lc = new RTCPeerConnection();
@@ -111,6 +118,8 @@
             stream.getTracks().map((track) => {
                 lc.addTrack(track,stream);
             }) 
+
+            
         }   
     
 </script>

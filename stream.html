@@ -88,7 +88,7 @@
             console.log("data channel opened");
         }
         dc.onmessage = function (message){
-            console.log("message received: "+message);
+            console.log("message received: "+message.data);
         }
     }
 

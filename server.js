@@ -55,6 +55,7 @@ app.get("/join",(req,res) => {
     res.sendFile(join(__dirname,"./join_stream.html")); 
 })
 
-server.listen("3000","192.168.45.44",() => {
+server.listen("3000","127.0.0.1",() => {
+    
     console.log("server running on port:3000");
 })
