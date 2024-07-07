@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream</title>
+</head>
+<body>
+    <video id="vid1" height="300" width="300" style="background-color:black ;" autoplay ></video> &nbsp; &nbsp;
+    <video id="vid2" height="300" width="300" style="background-color:black ;" autoplay></video>
+    <br><br>
+
+    <button id="localStream"> get my stream</button>
+    <button id="connect"> connect</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+
+    const  socket = io();
+    setTimeout(() => {
+        console.log(socket.id + " connected to web-socket server");
+    },1000);    
+
+    socket.on("remote-answer",async (answer) => {
+        console.log("recived remote answer: "+answer);
+        await window.lc.setRemoteDescription(answer);
+        console.log("remote answer set successfully!.");
+
+    })
+
+    const localStreamButton = document.querySelector("#localStream");
+    const connectButton = document.querySelector("#connect");
+    const video1 = document.querySelector("#vid1");
+    const video2 = document.querySelector("#vid2");
+
+    localStreamButton.addEventListener("click", () => {
+        window.navigator.mediaDevices.getUserMedia({audio:true,video:true})
+        .then((localStream) => {
+            video1.srcObject = localStream;
+        }).catch((error) => {
+            console.log("error in reading media");
+        })
+    })
+
+    connectButton.addEventListener("click",async() => {
+        await initializeRTCConnection();
+
+        window.lc.addEventListener("track",async (event) => {
+                console.log("event fired for stream");
+                const [remoteStream] = event.streams;
+                video2.srcObject = remoteStream;
+         })
+
+        await setDataChannel();
+        await setonIceCandidate();
+        await createOffer();
+        await sendOfferToRemotePeer();
+
+    })
+
+    async function sendOfferToRemotePeer() {
+        console.log("inside sendOfferToRemotePeer");
+        setTimeout(function () {
+            console.log("latest ice candidate to send: " +window.ice);
+            socket.emit("offer",window.ice);
+        },1000);
+    }
+
+    async function createOffer () {
+        console.log("inside createOffer");
+        const offer = await window.lc.createOffer();
+        window.lc.setLocalDescription(offer);
+    }
+
+    async function setonIceCandidate () {
+        console.log("inside setonIceCandidate");
+        window.lc.onicecandidate = function (ice) {
+            window.ice = window.lc.localDescription;
+
+        }
+    }
+
+    async function setDataChannel () {
+        console.log("inside setDataChannel");
+        const dc = window.lc.createDataChannel("channel")
+        window.dc = dc;
+        dc.onopen = function () {
+            console.log("data channel opened");
+        }
+        dc.onmessage = function (message){
+            console.log("message received: "+message);
+        }
+    }
+
+    async function initializeRTCConnection () {
+        const lc = new RTCPeerConnection();
+        window.lc = lc;
+        const stream = await video1.captureStream();
+        console.log("localstream captureed: "+ stream);
+        stream.getTracks().map((track) => {
+            lc.addTrack(track,stream);
+        })
+        
+    }   
+
+</script>
+</body>
+</html>
