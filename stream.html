@@ -68,14 +68,13 @@
     async function createOffer () {
         console.log("inside createOffer");
         const offer = await window.lc.createOffer();
-        window.lc.setLocalDescription(offer);
+        await window.lc.setLocalDescription(offer);
     }
 
     async function setonIceCandidate () {
         console.log("inside setonIceCandidate");
         window.lc.onicecandidate = function (ice) {
             window.ice = window.lc.localDescription;
-
         }
     }
 
@@ -90,18 +89,15 @@
             console.log("message received: "+message.data);
         }
     }
-
     async function initializeRTCConnection () {
         const lc = new RTCPeerConnection();
         window.lc = lc;
         const stream = await video1.captureStream();
-        console.log("localstream captureed: "+ stream);
+        console.log("local stream captured: "+ stream);
         stream.getTracks().map((track) => {
             lc.addTrack(track,stream);
         })
-        
-    }   
-
+    }
 </script>
 </body>
 </html>

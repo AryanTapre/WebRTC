@@ -25,7 +25,6 @@ io.on("connection",(socket) => {
 
     socket.on("offer",(offer) => {
         console.log("offer received from : "+socket.id);
-        console.log("offer :",offer);
 
         users.map((user) => {
             if(user.id  != socket.id && user.socket.connected) {
